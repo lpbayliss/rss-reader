@@ -8,6 +8,13 @@
       "when": 1704263166603,
       "tag": "0000_equal_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1704357595467,
+      "tag": "0001_hot_vance_astro",
+      "breakpoints": true
     }
   ]
 }

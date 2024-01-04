@@ -1,6 +1,8 @@
 import { relations, sql } from 'drizzle-orm';
-import { index, integer, pgTable, primaryKey, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, primaryKey, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { type AdapterAccount } from 'next-auth/adapters';
+import {} from 'crypto';
+import { url } from 'inspector';
 
 export const users = pgTable('user', {
   id: varchar('id', { length: 255 }).notNull().primaryKey(),
@@ -33,7 +35,7 @@ export const accounts = pgTable(
     session_state: varchar('session_state', { length: 255 }),
   },
   (account) => ({
-    compoundKey: primaryKey(account.provider, account.providerAccountId),
+    compoundKey: primaryKey({ columns: [account.provider, account.providerAccountId] }),
     userIdIdx: index('account_userId_idx').on(account.userId),
   }),
 );
@@ -66,6 +68,44 @@ export const verificationTokens = pgTable(
     expires: timestamp('expires', { mode: 'date' }).notNull(),
   },
   (vt) => ({
-    compoundKey: primaryKey(vt.identifier, vt.token),
+    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   }),
 );
+
+export const sources = pgTable(
+  'source',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title', { length: 255 }),
+    url: varchar('url', { length: 255 }).notNull(),
+    description: text('description'),
+    hash: varchar('hash', { length: 40 }).notNull().unique(),
+  },
+  (source) => ({
+    hashIndex: index('source_hash_idx').on(source.hash),
+  }),
+);
+
+export const sourcesRelations = relations(sources, ({ many }) => ({
+  articles: many(articles),
+}));
+
+export const articles = pgTable(
+  'article',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: varchar('title', { length: 255 }),
+    url: varchar('url', { length: 255 }).notNull(),
+    description: text('description'),
+    hash: varchar('hash', { length: 40 }).notNull().unique(),
+    source: uuid('source').notNull(),
+    timestamp: timestamp('timestamp', { mode: 'date' }).notNull(),
+  },
+  (article) => ({
+    hashIndex: index('article_hash_idx').on(article.hash),
+  }),
+);
+
+export const articlesRelations = relations(articles, ({ one }) => ({
+  source: one(sources, { fields: [articles.source], references: [sources.id] }),
+}));
