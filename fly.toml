@@ -1,0 +1,37 @@
+# fly.toml app configuration file generated for kraai on 2024-01-04T13:57:42+11:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "kraai"
+primary_region = "syd"
+
+[env]
+  NEXTAUTH_URL="https://www.kraai.app"
+  DISCORD_CLIENT_ID="1191987164758671400"
+
+[build]
+
+[deploy]
+  release_command = "pnpm run db:migrate"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[services.ports]]
+  handlers = ["http"]
+  port = 80
+
+[[services.ports]]
+  handlers = ["tls", "http"]
+  port = 443
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 1024

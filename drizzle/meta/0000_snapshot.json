@@ -1,5 +1,5 @@
 {
-  "id": "262ad2be-6449-4693-8f6b-6aaf37db089d",
+  "id": "d813a8c3-e1f8-48e6-99f4-d2c8c84f4905",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -8,8 +8,8 @@
       "name": "account",
       "schema": "",
       "columns": {
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -26,8 +26,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "provider_account_id": {
-          "name": "provider_account_id",
+        "providerAccountId": {
+          "name": "providerAccountId",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
@@ -76,17 +76,17 @@
         }
       },
       "indexes": {
-        "account_user_id_idx": {
-          "name": "account_user_id_idx",
-          "columns": ["user_id"],
+        "account_userId_idx": {
+          "name": "account_userId_idx",
+          "columns": ["userId"],
           "isUnique": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "account_provider_provider_account_id_pk": {
-          "name": "account_provider_provider_account_id_pk",
-          "columns": ["provider", "provider_account_id"]
+        "account_provider_providerAccountId_pk": {
+          "name": "account_provider_providerAccountId_pk",
+          "columns": ["provider", "providerAccountId"]
         }
       },
       "uniqueConstraints": {}
@@ -95,8 +95,8 @@
       "name": "session",
       "schema": "",
       "columns": {
-        "session_token": {
-          "name": "session_token",
+        "sessionToken": {
+          "name": "sessionToken",
           "type": "varchar(255)",
           "primaryKey": true,
           "notNull": true
@@ -115,8 +115,8 @@
         }
       },
       "indexes": {
-        "session_user_id_idx": {
-          "name": "session_user_id_idx",
+        "session_userId_idx": {
+          "name": "session_userId_idx",
           "columns": ["userId"],
           "isUnique": false
         }
@@ -147,8 +147,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "email_verified": {
-          "name": "email_verified",
+        "emailVerified": {
+          "name": "emailVerified",
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": false,
@@ -166,8 +166,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "verification_token": {
-      "name": "verification_token",
+    "verificationToken": {
+      "name": "verificationToken",
       "schema": "",
       "columns": {
         "identifier": {
@@ -192,8 +192,8 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {
-        "verification_token_identifier_token_pk": {
-          "name": "verification_token_identifier_token_pk",
+        "verificationToken_identifier_token_pk": {
+          "name": "verificationToken_identifier_token_pk",
           "columns": ["identifier", "token"]
         }
       },

@@ -6,7 +6,7 @@ export const users = pgTable('user', {
   id: varchar('id', { length: 255 }).notNull().primaryKey(),
   name: varchar('name', { length: 255 }),
   email: varchar('email', { length: 255 }).notNull(),
-  emailVerified: timestamp('email_verified', {
+  emailVerified: timestamp('emailVerified', {
     mode: 'date',
     precision: 3,
   }).default(sql`CURRENT_TIMESTAMP(3)`),
@@ -15,18 +15,15 @@ export const users = pgTable('user', {
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
-  sessions: many(sessions),
 }));
 
 export const accounts = pgTable(
   'account',
   {
-    userId: varchar('user_id', { length: 255 }).notNull(),
+    userId: varchar('userId', { length: 255 }).notNull(),
     type: varchar('type', { length: 255 }).$type<AdapterAccount['type']>().notNull(),
     provider: varchar('provider', { length: 255 }).notNull(),
-    providerAccountId: varchar('provider_account_id', {
-      length: 255,
-    }).notNull(),
+    providerAccountId: varchar('providerAccountId', { length: 255 }).notNull(),
     refresh_token: text('refresh_token'),
     access_token: text('access_token'),
     expires_at: integer('expires_at'),
@@ -36,10 +33,8 @@ export const accounts = pgTable(
     session_state: varchar('session_state', { length: 255 }),
   },
   (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-    userIdIdx: index('account_user_id_idx').on(account.userId),
+    compoundKey: primaryKey(account.provider, account.providerAccountId),
+    userIdIdx: index('account_userId_idx').on(account.userId),
   }),
 );
 
@@ -50,12 +45,12 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const sessions = pgTable(
   'session',
   {
-    sessionToken: varchar('session_token', { length: 255 }).notNull().primaryKey(),
+    sessionToken: varchar('sessionToken', { length: 255 }).notNull().primaryKey(),
     userId: varchar('userId', { length: 255 }).notNull(),
     expires: timestamp('expires', { mode: 'date' }).notNull(),
   },
   (session) => ({
-    userIdIdx: index('session_user_id_idx').on(session.userId),
+    userIdIdx: index('session_userId_idx').on(session.userId),
   }),
 );
 
@@ -64,13 +59,13 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
 }));
 
 export const verificationTokens = pgTable(
-  'verification_token',
+  'verificationToken',
   {
     identifier: varchar('identifier', { length: 255 }).notNull(),
     token: varchar('token', { length: 255 }).notNull(),
     expires: timestamp('expires', { mode: 'date' }).notNull(),
   },
   (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+    compoundKey: primaryKey(vt.identifier, vt.token),
   }),
 );
