@@ -3,19 +3,39 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import {
   Box,
   Button,
-  Container,
+  Divider,
   FormControl,
   FormErrorMessage,
   FormHelperText,
   HStack,
   Heading,
   Input,
+  Link,
+  Stack,
+  Text,
   VStack,
 } from '@chakra-ui/react';
 import { type GetServerSideProps } from 'next';
 import { getServerAuthSession } from '~/server/auth';
 import { api } from '~/utils/api';
 import { FormattedMessage } from 'react-intl';
+import { format, formatRelative } from 'date-fns';
+
+const MySources = () => {
+  const { data } = api.feed.fetchMySources.useQuery({});
+  return (
+    <VStack alignItems="start" w="full">
+      {data?.map((item) => (
+        <HStack key={item.id} w="full">
+          <Text size="lg">{item.title}</Text>
+          <Button colorScheme="red" ml="auto" size="sm">
+            Remove
+          </Button>
+        </HStack>
+      ))}
+    </VStack>
+  );
+};
 
 type CreateSourceFormInputs = {
   url: string;
@@ -39,7 +59,15 @@ const CreateSourceForm = () => {
   };
 
   return (
-    <HStack as="form" onSubmit={handleSubmit(handleOnSubmit)} alignItems="start">
+    <HStack
+      as="form"
+      onSubmit={handleSubmit(handleOnSubmit)}
+      alignItems="start"
+      pt="4"
+      pb="2"
+      alignSelf="start"
+      w="full"
+    >
       <FormControl isInvalid={!!errors.url}>
         <Input
           id="source-url"
@@ -65,11 +93,16 @@ export const getServerSideProps = (async (ctx) => {
 }) satisfies GetServerSideProps;
 
 export default function Feed() {
+  const utils = api.useUtils();
   const { data } = api.feed.fetch.useQuery({});
-  const processSourcesMutation = api.feed.processSources.useMutation();
+  const { mutateAsync, isLoading } = api.feed.processSources.useMutation({
+    async onSuccess() {
+      await utils.feed.fetch.invalidate();
+    },
+  });
 
   const onProcessSources = async () => {
-    await processSourcesMutation.mutateAsync({});
+    await mutateAsync({});
   };
 
   return (
@@ -81,29 +114,35 @@ export default function Feed() {
           content="Kraai - A place to find your favorite content, and only your favorite content"
         />
       </Head>
-      <VStack as="main" gap={4}>
-        <Box py="6">
-          <Heading as="h2" size="xl">
+      <Stack direction={['column', null, 'row']} as="main" gap={4} alignItems="start" p="4" w="full">
+        <VStack as="section" minW="xs" maxW={[null, null, 'sm']} w="full">
+          <Heading as="h2" size="xl" alignSelf="start">
             Your Feed
           </Heading>
-        </Box>
-        <Box>
+          <Divider />
           <CreateSourceForm />
-          <Button onClick={onProcessSources}>
+          <MySources />
+          <Button colorScheme="green" onClick={onProcessSources} isLoading={isLoading} w="full" mt="4">
             <FormattedMessage defaultMessage="Process" id="QZp8LQ" />
           </Button>
-        </Box>
-        {data?.map((item, i) => (
-          <Container bg="gray.700" p="10" rounded="md" key={item.id}>
-            <Heading as="h2" size="lg">
-              <a href={item.url} target="_blank">
-                {item.title}
-              </a>
-            </Heading>
-            {/* <Box dangerouslySetInnerHTML={{ __html: item.content }} /> */}
-          </Container>
-        ))}
-      </VStack>
+        </VStack>
+        <VStack flexGrow="2">
+          {data?.map((item) => (
+            <Box bg="gray.700" p="4" rounded="md" key={item.id} w="full">
+              <Text fontSize="large">
+                <Link href={item.url} target="_blank">
+                  {item.title}
+                </Link>{' '}
+                ({item.source.title})
+              </Text>
+              <Text fontStyle="italic" fontSize="small">
+                {formatRelative(item.timestamp, new Date())}
+              </Text>
+              {/* <Box dangerouslySetInnerHTML={{ __html: item.content }} /> */}
+            </Box>
+          ))}
+        </VStack>
+      </Stack>
     </>
   );
 }

@@ -17,6 +17,7 @@ export const users = pgTable('user', {
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  usersToSources: many(usersToSources),
 }));
 
 export const accounts = pgTable(
@@ -88,6 +89,7 @@ export const sources = pgTable(
 
 export const sourcesRelations = relations(sources, ({ many }) => ({
   articles: many(articles),
+  usersToSources: many(usersToSources),
 }));
 
 export const articles = pgTable(
@@ -108,4 +110,30 @@ export const articles = pgTable(
 
 export const articlesRelations = relations(articles, ({ one }) => ({
   source: one(sources, { fields: [articles.source], references: [sources.id] }),
+}));
+
+export const usersToSources = pgTable(
+  'users_to_sources',
+  {
+    userId: varchar('user_id')
+      .notNull()
+      .references(() => users.id),
+    sourceId: uuid('source_id')
+      .notNull()
+      .references(() => sources.id),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.sourceId] }),
+  }),
+);
+
+export const usersToSourcesRelations = relations(usersToSources, ({ one }) => ({
+  sources: one(sources, {
+    fields: [usersToSources.sourceId],
+    references: [sources.id],
+  }),
+  user: one(users, {
+    fields: [usersToSources.userId],
+    references: [users.id],
+  }),
 }));
