@@ -1,8 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
-import { index, integer, pgTable, primaryKey, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, pgTable, primaryKey, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { type AdapterAccount } from 'next-auth/adapters';
-import {} from 'crypto';
-import { url } from 'inspector';
 
 export const users = pgTable('user', {
   id: varchar('id', { length: 255 }).notNull().primaryKey(),
@@ -18,6 +16,7 @@ export const users = pgTable('user', {
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   usersToSources: many(usersToSources),
+  usersToArticles: many(usersToArticles),
 }));
 
 export const accounts = pgTable(
@@ -108,8 +107,36 @@ export const articles = pgTable(
   }),
 );
 
-export const articlesRelations = relations(articles, ({ one }) => ({
+export const articlesRelations = relations(articles, ({ one, many }) => ({
   source: one(sources, { fields: [articles.source], references: [sources.id] }),
+  usersToArticles: many(usersToArticles),
+}));
+
+export const usersToArticles = pgTable(
+  'users_to_articles',
+  {
+    userId: varchar('user_id')
+      .notNull()
+      .references(() => users.id),
+    articleId: uuid('article_id')
+      .notNull()
+      .references(() => sources.id),
+    lastRead: timestamp('timestamp', { mode: 'date' }),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.articleId] }),
+  }),
+);
+
+export const usersToArticlesRelations = relations(usersToArticles, ({ one }) => ({
+  articles: one(articles, {
+    fields: [usersToArticles.articleId],
+    references: [articles.id],
+  }),
+  user: one(users, {
+    fields: [usersToArticles.userId],
+    references: [users.id],
+  }),
 }));
 
 export const usersToSources = pgTable(
