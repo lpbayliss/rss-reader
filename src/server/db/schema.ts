@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { boolean, index, integer, pgTable, primaryKey, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, primaryKey, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { type AdapterAccount } from 'next-auth/adapters';
 
 export const users = pgTable('user', {
@@ -120,7 +120,7 @@ export const usersToArticles = pgTable(
       .references(() => users.id),
     articleId: uuid('article_id')
       .notNull()
-      .references(() => sources.id),
+      .references(() => articles.id),
     lastRead: timestamp('timestamp', { mode: 'date' }),
   },
   (t) => ({

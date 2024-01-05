@@ -3,7 +3,7 @@ import axios from 'axios';
 import { createHash } from 'crypto';
 
 import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
-import { articles, sources, usersToSources } from '~/server/db/schema';
+import { articles, sources, usersToArticles, usersToSources } from '~/server/db/schema';
 import { desc, eq, inArray } from 'drizzle-orm';
 
 type NewArticle = typeof articles.$inferInsert;
@@ -20,7 +20,13 @@ export const feedRouter = createTRPCRouter({
         sources.map((s) => s.sourceId),
       ),
       orderBy: [desc(articles.timestamp)],
-      with: { source: { columns: { title: true } } },
+      with: {
+        source: { columns: { title: true } },
+        usersToArticles: {
+          where: eq(usersToArticles.userId, ctx.session.user.id),
+          columns: { lastRead: true },
+        },
+      },
     });
   }),
   createSource: protectedProcedure.input(z.object({ url: z.string() })).mutation(async ({ ctx, input }) => {
@@ -87,5 +93,18 @@ export const feedRouter = createTRPCRouter({
       where: inArray(sources.id, sourceIds),
       columns: { id: true, title: true },
     });
+  }),
+  readArticle: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    await ctx.db
+      .insert(usersToArticles)
+      .values({
+        userId: ctx.session.user.id,
+        articleId: input.id,
+        lastRead: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [usersToArticles.articleId, usersToArticles.userId],
+        set: { lastRead: new Date() },
+      });
   }),
 });

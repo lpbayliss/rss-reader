@@ -1,1 +1,0 @@
-ALTER TABLE "users_to_sources" ALTER COLUMN "user_id" SET DATA TYPE varchar;

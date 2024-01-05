@@ -19,7 +19,7 @@ import { type GetServerSideProps } from 'next';
 import { getServerAuthSession } from '~/server/auth';
 import { api } from '~/utils/api';
 import { FormattedMessage } from 'react-intl';
-import { format, formatRelative } from 'date-fns';
+import { formatRelative } from 'date-fns';
 
 const MySources = () => {
   const { data } = api.feed.fetchMySources.useQuery({});
@@ -41,6 +41,8 @@ type CreateSourceFormInputs = {
   url: string;
 };
 const CreateSourceForm = () => {
+  const utils = api.useUtils();
+
   const {
     register,
     handleSubmit,
@@ -49,8 +51,9 @@ const CreateSourceForm = () => {
   } = useForm<CreateSourceFormInputs>();
 
   const addSourceMutation = api.feed.createSource.useMutation({
-    onSuccess() {
+    async onSuccess() {
       reset();
+      await utils.feed.fetchMySources.invalidate();
     },
   });
 
@@ -101,8 +104,19 @@ export default function Feed() {
     },
   });
 
+  const { mutateAsync: readArticleMutateAsync } = api.feed.readArticle.useMutation({
+    async onSuccess() {
+      await utils.feed.fetch.invalidate();
+    },
+  });
+
   const onProcessSources = async () => {
     await mutateAsync({});
+  };
+
+  const handleReadArticle = (id: string) => async () => {
+    await readArticleMutateAsync({ id });
+    await utils.feed.fetch.invalidate();
   };
 
   return (
@@ -128,9 +142,20 @@ export default function Feed() {
         </VStack>
         <VStack flexGrow="2">
           {data?.map((item) => (
-            <Box bg="gray.700" p="4" rounded="md" key={item.id} w="full">
+            <Box
+              bg={item.usersToArticles[0]?.lastRead ? 'gray.500' : 'gray.700'}
+              p="4"
+              rounded="md"
+              key={item.id}
+              w="full"
+            >
               <Text fontSize="large">
-                <Link href={item.url} target="_blank">
+                <Link
+                  href={item.url}
+                  onClick={handleReadArticle(item.id)}
+                  onAuxClick={handleReadArticle(item.id)}
+                  target="_blank"
+                >
                   {item.title}
                 </Link>{' '}
                 ({item.source.title})
