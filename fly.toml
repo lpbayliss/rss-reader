@@ -9,6 +9,7 @@ primary_region = "syd"
 [env]
   NEXTAUTH_URL="https://www.kraai.app"
   DISCORD_CLIENT_ID="1191987164758671400"
+  GOOGLE_CLIENT_ID="825973011159-e3ok7kg9v1v1r4ito19ad85ifg1i5r4l.apps.googleusercontent.com"
 
 [build]
 
