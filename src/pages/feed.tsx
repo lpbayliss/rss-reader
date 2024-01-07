@@ -20,6 +20,7 @@ import { getServerAuthSession } from '~/server/auth';
 import { api } from '~/utils/api';
 import { FormattedMessage } from 'react-intl';
 import { formatRelative } from 'date-fns';
+import { signOut } from 'next-auth/react';
 
 const MySources = () => {
   const { data } = api.feed.fetchMySources.useQuery({});
@@ -96,6 +97,8 @@ export const getServerSideProps = (async (ctx) => {
 }) satisfies GetServerSideProps;
 
 export default function Feed() {
+  if (typeof window === 'undefined') return null;
+
   const utils = api.useUtils();
   const { data } = api.feed.fetch.useQuery({});
   const { mutateAsync, isLoading } = api.feed.processSources.useMutation({
@@ -138,6 +141,9 @@ export default function Feed() {
           <MySources />
           <Button colorScheme="green" onClick={onProcessSources} isLoading={isLoading} w="full" mt="4">
             <FormattedMessage defaultMessage="Process" id="QZp8LQ" />
+          </Button>
+          <Button colorScheme="red" onClick={() => signOut()} w="full" mt="4">
+            <FormattedMessage defaultMessage="Sign out" id="xXbJso" />
           </Button>
         </VStack>
         <VStack flexGrow="2">
