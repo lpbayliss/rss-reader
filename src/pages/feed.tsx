@@ -134,7 +134,7 @@ export default function Feed() {
       <Stack direction={['column', null, 'row']} as="main" gap={4} alignItems="start" p="4" w="full">
         <VStack as="section" minW="xs" maxW={[null, null, 'sm']} w="full">
           <Heading as="h2" size="xl" alignSelf="start">
-            Your Feed
+            <FormattedMessage defaultMessage="Your Feed" id="n3cnsJ" />
           </Heading>
           <Divider />
           <CreateSourceForm />
